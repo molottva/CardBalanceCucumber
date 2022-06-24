@@ -1,10 +1,11 @@
 package ru.netology.page;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Condition.hidden;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$x;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TransferPage {
     private SelenideElement amountInput = $x("//span[@data-test-id='amount']//input");
@@ -14,21 +15,30 @@ public class TransferPage {
     private SelenideElement cancelButton = $x("//button[@data-test-id='action-cancel']");
     private SelenideElement errorNotification = $x("//div[@data-test-id='error-notification']");
     private SelenideElement errorButton = $x("//div[@data-test-id='error-notification']/button");
-    CardBalancePage dashboard = new CardBalancePage();
 
-    public void cucumberTransfer(String amount, String cardFrom) {
+    public TransferPage() {
+        amountInput.should(visible);
+        fromInput.should(visible);
+        toInput.should(visible);
+        transferButton.should(visible);
+        cancelButton.should(visible);
+        errorNotification.should(hidden);
+        errorButton.should(hidden);
+    }
+
+    public void transfer(String amount, String cardFrom) {
         amountInput.val(amount);
         fromInput.val(cardFrom);
         transferButton.click();
-        errorNotification.should(hidden);
     }
 
-    public void cucumberMatchBalance (int indexCard, String expectedBalance) {
-        String[] balance = expectedBalance.split(" ");
-        String sum = "";
-        for (String tmp : balance) {
-            sum = sum + tmp;
+    public CardBalancePage checkNotification(Condition status) {
+        errorNotification.should(status);
+        if (status.equals(visible)) {
+            errorButton.click();
+            errorNotification.should(hidden);
+            cancelButton.click();
         }
-        assertEquals(dashboard.getBalance(indexCard), Integer.valueOf(sum));
+        return new CardBalancePage();
     }
 }
